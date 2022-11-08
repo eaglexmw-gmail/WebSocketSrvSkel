@@ -1,0 +1,36 @@
+
+TOP_DIR ?= $(shell pwd)/../..
+CUR_DIR := $(shell pwd)
+
+BASE_ASSET := web_assets
+TARGET_H := $(BASE_ASSET).h
+
+ASSETS_DIR := $(TOP_DIR)/frontend/basehttp/dist
+
+ASSETS_DIRS = $(shell find $(ASSETS_DIR) -type d)
+ASSETS_FILES = $(foreach dir, $(ASSETS_DIRS), $(wildcard $(dir)/*.*))
+
+RANDOM := $(shell /bin/bash -c "echo $$RANDOM")
+ZIP_FILE := $(BASE_ASSET).zip
+TEMP_H_FILE := $(CUR_DIR)/$(TARGET_H)_$(RANDOM)
+FULL_ZIP_FILE := $(CUR_DIR)/$(ZIP_FILE)
+
+assets_h_header := "\#ifndef _WEB_ASSETS_H_\n\#define _WEB_ASSETS_H_\n\n\#ifdef __cplusplus\nextern \"C\" {\n\#endif\n\nstatic "
+assets_h_tail := "\nvoid get_web_assets(const unsigned char** buf, unsigned int* buf_len)\n{\n    if (0 != buf)       *buf = web_assets_zip;\n    if (0 != buf_len)   *buf_len = sizeof(web_assets_zip);\n}\n\n\#ifdef __cplusplus\n};\n\#endif\n\n\#endif\n"
+
+all: $(TARGET_H)
+
+.PHONY: ${TARGET_H} clean
+
+$(TARGET_H): $(ASSETS_FILES)
+	@pushd $(ASSETS_DIR)/ > /dev/null && zip -q -r $(FULL_ZIP_FILE) ./* && popd > /dev/null;
+	@xxd -i $(ZIP_FILE) $(TEMP_H_FILE)
+	@rm -f $(FULL_ZIP_FILE)
+	@echo "generate $(TARGET_H)"
+	@printf $(assets_h_header) | sed -e 's/^ //' >  $(TARGET_H)
+	@head -n -1 $(TEMP_H_FILE)     >> $(TARGET_H)
+	@printf $(assets_h_tail) | sed -e 's/^ //'  >>  $(TARGET_H)
+	@rm -f $(TEMP_H_FILE)
+
+clean: 
+	@rm -f $(TARGET)
