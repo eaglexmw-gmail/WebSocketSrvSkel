@@ -124,8 +124,8 @@ void WsFileServer<ws_request, ws_response, ws_msg>::send_http_msg(void* conn_, b
         con->set_body(rsp.get_body());
         con->set_status(rsp.get_status_code());
     }
-    con->defer_http_response();
-    con->send_http_response();
+    //con->defer_http_response();
+    //con->send_http_response();
 }
 
 template<>

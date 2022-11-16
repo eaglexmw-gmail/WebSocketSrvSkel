@@ -96,11 +96,12 @@ private:
                 Response<RspBase> rsp_(&rsp);
                 if (handle_get_file(strUrl, conn_, req_, rsp_)){
                     send_http_msg(conn_, false, rsp);
-                }
-                if (dispatch_http_get(strUrl, conn_, req_, rsp_)){
-                    send_http_msg(conn_, false, rsp);
                 } else {
-                    send_http_msg(conn_, true, rsp);
+                    if (dispatch_http_get(strUrl, conn_, req_, rsp_)){
+                        send_http_msg(conn_, false, rsp);
+                    } else {
+                        send_http_msg(conn_, true, rsp);
+                    }
                 }
             }
         } catch(std::exception &e) {
